@@ -11,6 +11,7 @@ import string
 from sklearn.feature_extraction.text import TfidfVectorizer
 import pandas as pd
 from collections import defaultdict
+import json
 
 
 # Télécharger les ressources nécessaires pour nltk
@@ -106,55 +107,14 @@ def add_cv_to_index(pdf_path, index, index_inverse):
             index_inverse[term].append(filename)
 
 
-# Fonction pour générer un fichier PDF avec un tableau des index
-def generate_pdf_with_index(pdf_filename, index_inverse):
-    c = canvas.Canvas(pdf_filename, pagesize=letter)
-    width, height = letter
-    margin = 40
-    table_width = width - 2 * margin
-    col1_width = 250  # Largeur de la première colonne (Index)
-    col2_width = table_width - col1_width  # Largeur de la deuxième colonne (CV associés)
-
-    y_position = height - 40
-    c.setFont("Helvetica-Bold", 12)
-
-    # Titre du tableau
-    c.drawString(margin, y_position, "Index des termes et CV associés")
-    y_position -= 20
-
-    # Dessiner les en-têtes du tableau
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(margin, y_position, "Index")
-    c.drawString(margin + col1_width, y_position, "CV associés")
-    y_position -= 20
-
-    # Dessiner les lignes du tableau
-    c.setFont("Helvetica", 10)
-
-    for term, docs in index_inverse.items():
-        # Dessiner le terme (index)
-        c.drawString(margin, y_position, term)
-        y_position -= 15  # Avancer la position sur l'axe Y pour les fichiers associés
-
-        # Dessiner les CV associés ligne par ligne
-        for doc in docs:
-            c.drawString(margin + col1_width, y_position, doc)  # Afficher chaque CV dans la colonne
-            y_position -= 15  # Avancer la position
-
-            # Si la position Y est trop basse, créer une nouvelle page
-            if y_position < 40:
-                c.showPage()
-                y_position = height - 40
-                c.setFont("Helvetica", 10)
-                c.drawString(margin, y_position, "Index")
-                c.drawString(margin + col1_width, y_position, "CV associés")
-                y_position -= 20
-
-        # Ajout d'un espace entre les termes
-        y_position -= 10
-
-    c.save()
-
+# Fonction mise à jour pour générer un fichier JSON avec les index inversés
+def generate_json_with_index(json_filename, index_inverse):
+    try:
+        with open(json_filename, 'w', encoding='utf-8') as f:
+            json.dump(index_inverse, f, ensure_ascii=False, indent=4)
+        print(f"Index inversé sauvegardé dans : {json_filename}")
+    except Exception as e:
+        print(f"Erreur lors de la génération du fichier JSON : {e}")
 
 
 #Ponderation
@@ -216,16 +176,24 @@ pdf_paths = [
     if file.endswith(".pdf")  # Filtrer uniquement les fichiers PDF
 ]
 
+
+
+
+
+
+
 # Ajouter chaque CV à l'index et mettre à jour l'index inversé
 for pdf_path in pdf_paths:
     add_cv_to_index(pdf_path, ix, index_inverse)
 
-
+# Générer le fichier JSON avec les index inversés
+output_json = "index_inverse.json"
+generate_json_with_index(output_json, index_inverse)
 
 # Générer le PDF avec le tableau des index
-output_pdf = "index_table.pdf"
-generate_pdf_with_index(output_pdf, index_inverse)
-print(f"PDF généré: {output_pdf}")
+#output_pdf = "index_table.pdf"
+#generate_pdf_with_index(output_pdf, index_inverse)
+#print(f"PDF généré: {output_pdf}")
 
 # Lancer le traitement
 tfidf_results, top_terms_per_doc = process_and_weight_pdfs(pdf_paths)
@@ -234,4 +202,3 @@ tfidf_results, top_terms_per_doc = process_and_weight_pdfs(pdf_paths)
 print("Termes les plus importants par document :")
 for doc, terms in top_terms_per_doc.items():
     print(f"{doc}: {', '.join(terms)}")
-
