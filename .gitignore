@@ -18,4 +18,5 @@ Thumbs.db
 
 # Ignorer les fichiers CSV et PDF (optionnel si générés)
 *.csv
-*.pdf
+*.json
+
