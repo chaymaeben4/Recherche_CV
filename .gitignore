@@ -1,0 +1,21 @@
+# Ignorer l'environnement virtuel
+venv/
+
+# Ignorer les fichiers Python compilés
+__pycache__/
+*.py[cod]
+
+# Ignorer les fichiers logs
+*.log
+
+# Ignorer les fichiers générés par le système
+.DS_Store
+Thumbs.db
+
+# Ignorer les résultats des IDE comme VS Code
+.vscode/
+.idea/
+
+# Ignorer les fichiers CSV et PDF (optionnel si générés)
+*.csv
+*.pdf
